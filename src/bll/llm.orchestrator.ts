@@ -11,7 +11,7 @@ import {
 } from '../types/turn.types';
 import { ILLMClient } from '../clients/llm.client.interface';
 import { ITTSClient } from '../clients/tts.interface';
-import { IImageClient } from '../clients/openai-image.client';
+import { IImageClient } from '../clients/image.interface';
 import { PromptService } from './prompt.service';
 import { getEnvConfig } from '../config/env';
 

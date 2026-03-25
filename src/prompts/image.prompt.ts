@@ -2,7 +2,7 @@ export const STORY_IMAGE_STYLE_BASE = `
 2D flat vector illustration, children's animated TV show style.
 Simple rounded shapes, thick black outlines, pastel colour palette.
 Characters are cute cartoon animals with simple dot eyes and round noses.
-Main character: a small friendly pink pig named Pippa, wearing a red dress,
+Main character: a small friendly pink pig named Peppa, wearing a red dress,
 standing upright like a person.
 White background or simple flat colour sky and grass.
 No gradients, no shadows, no photorealism.
@@ -37,7 +37,7 @@ export interface SceneExtractorOutput {
 }
 
 export function buildSceneExtractorPrompt(input: SceneExtractorInput): SceneExtractorOutput {
-  const systemPrompt = `You are a children's book illustrator's assistant. You read a story and describe exactly what to draw. You MUST keep the specific setting, objects, and action from the story — do NOT generalize or make up a different scene. The main character is always "Pippa the pink pig in a red dress". Replace any human characters with cartoon animals. You always respond with valid JSON only.`;
+  const systemPrompt = `You are a children's book illustrator's assistant. You read a story and describe exactly what to draw. You MUST keep the specific setting, objects, and action from the story — do NOT generalize or make up a different scene. The main character is always "Peppa the pink pig in a red dress". Replace any human characters with cartoon animals. You always respond with valid JSON only.`;
 
   const prompt = `Read this story paragraph carefully. Extract ONE specific visual scene that an illustrator should draw.
 
@@ -45,19 +45,19 @@ RULES:
 - Keep the EXACT setting from the story (garden, school, forest, kitchen, etc.)
 - Keep the EXACT objects mentioned (flowers, watering can, book, cake, etc.)
 - Keep the EXACT action happening (watering, reading, dancing, cooking, etc.)
-- Replace the main character with "Pippa the pink pig in a red dress"
+- Replace the main character with "Peppa the pink pig in a red dress"
 - Replace any other people with cartoon animals (rabbit, sheep, cat, dog)
 - Describe what is visually happening — positions, expressions, surroundings
 - Max 30 words, but be SPECIFIC — no vague descriptions
 
 Story: "${input.storyParagraph}"
 
-BAD example: "Pippa enjoys a beautiful day" (too vague, no specific objects)
-GOOD example: "Pippa the pink pig waters a glowing blue flower in a small garden with a wooden fence and a smiling snail"
+BAD example: "Peppa enjoys a beautiful day" (too vague, no specific objects)
+GOOD example: "Peppa the pink pig waters a glowing blue flower in a small garden with a wooden fence and a smiling snail"
 
 Respond with JSON:
 {
-  "sceneDescription": "Pippa the pink pig ... (specific scene from the story)"
+  "sceneDescription": "Peppa the pink pig ... (specific scene from the story)"
 }`;
 
   return { prompt, systemPrompt };

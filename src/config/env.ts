@@ -12,6 +12,12 @@ export interface EnvConfig {
   ENABLE_TTS: boolean;
   ENABLE_IMAGE: boolean;
   ENABLE_SCENARIOS: boolean;
+  ELEVENLABS_IMAGE_ENABLED: boolean;
+  ELEVENLABS_IMAGE_MODEL: string;
+  TOGETHER_API_KEY: string;
+  TOGETHER_IMAGE_MODEL: string;
+  OPENAI_IMAGE_MODEL: string;
+  OPENAI_IMAGE_QUALITY: string;
 }
 
 function requireEnv(key: string): string {
@@ -50,6 +56,12 @@ export function getEnvConfig(): EnvConfig {
     ENABLE_TTS: optionalEnv('ENABLE_TTS', 'true') === 'true',
     ENABLE_IMAGE: optionalEnv('ENABLE_IMAGE', 'true') === 'true',
     ENABLE_SCENARIOS: optionalEnv('ENABLE_SCENARIOS', 'true') === 'true',
+    ELEVENLABS_IMAGE_ENABLED: optionalEnv('ELEVENLABS_IMAGE_ENABLED', 'false') === 'true',
+    ELEVENLABS_IMAGE_MODEL: optionalEnv('ELEVENLABS_IMAGE_MODEL', 'flux-kontext'),
+    TOGETHER_API_KEY: optionalEnv('TOGETHER_API_KEY', ''),
+    TOGETHER_IMAGE_MODEL: optionalEnv('TOGETHER_IMAGE_MODEL', 'black-forest-labs/FLUX.1-schnell'),
+    OPENAI_IMAGE_MODEL: optionalEnv('OPENAI_IMAGE_MODEL', 'dall-e-3'),
+    OPENAI_IMAGE_QUALITY: optionalEnv('OPENAI_IMAGE_QUALITY', 'standard'),
   };
 
   // Validate that the chosen provider has its required keys
