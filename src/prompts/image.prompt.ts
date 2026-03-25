@@ -4,28 +4,15 @@ Simple rounded shapes, thick black outlines, pastel colour palette.
 Characters are cute cartoon animals with simple dot eyes and round noses.
 Main character: a small friendly pink pig named Peppa, wearing a red dress,
 standing upright like a person.
-White background or simple flat colour sky and grass.
 No gradients, no shadows, no photorealism.
 Bright, cheerful, age 3-7 audience.
 Style similar to classic British children's animation.
-`;
-
-export const STORY_IMAGE_HARD_RULES = `
-HARD RULES (must follow strictly):
-- STRICT 2D FLAT only. NOT 3D. NOT realistic. NOT watercolor. NOT painterly.
-- Completely flat 2D shapes with solid fill colors, ZERO shading, ZERO gradients, ZERO 3D effects
-- Bold solid black outlines around every shape
-- Characters are simple geometric shapes: circles and ovals for heads, rectangle bodies
-- Main character: a small pink pig girl with a round head seen from the side (profile view), circular protruding snout/nose, two tiny black dot eyes, bright pink rosy circle cheeks, two small ears on top, wearing a bright red dress, with short arms and legs
-- Background: simple flat green hills (just curved shapes), flat light blue sky, simple yellow circle sun
-- Other characters: simple cartoon animals (rabbits, sheep, cats) drawn in same flat geometric style
-- Colors: bright solid pastels — pink, red, blue, green, yellow, orange. NO complex textures
-- ABSOLUTELY NO text, words, letters, or numbers in the image
+ABSOLUTELY NO text, words, letters, or numbers in the image.
 `;
 
 /**
  * Step 1: Extract a short visual scene description from the story paragraph.
- * Sent to the LLM, not to DALL-E.
+ * Sent to the LLM, not to the image model.
  */
 export interface SceneExtractorInput {
   storyParagraph: string;
@@ -37,34 +24,37 @@ export interface SceneExtractorOutput {
 }
 
 export function buildSceneExtractorPrompt(input: SceneExtractorInput): SceneExtractorOutput {
-  const systemPrompt = `You are a children's book illustrator's assistant. You read a story and describe exactly what to draw. You MUST keep the specific setting, objects, and action from the story — do NOT generalize or make up a different scene. The main character is always "Peppa the pink pig in a red dress". Replace any human characters with cartoon animals. You always respond with valid JSON only.`;
+  const systemPrompt = `You are a children's book illustrator's assistant. You read a story and describe exactly what to draw. You MUST keep the specific setting, objects, characters, and action from the story — do NOT generalize or make up a different scene. The main character is always "Peppa the pink pig in a red dress". Replace any human characters with cartoon animals. You always respond with valid JSON only.`;
 
   const prompt = `Read this story paragraph carefully. Extract ONE specific visual scene that an illustrator should draw.
 
 RULES:
 - Keep the EXACT setting from the story (garden, school, forest, kitchen, etc.)
+- Keep ALL specific characters mentioned (owl, gnome, cat, rabbit, etc.)
 - Keep the EXACT objects mentioned (flowers, watering can, book, cake, etc.)
-- Keep the EXACT action happening (watering, reading, dancing, cooking, etc.)
-- Replace the main character with "Peppa the pink pig in a red dress"
-- Replace any other people with cartoon animals (rabbit, sheep, cat, dog)
-- Describe what is visually happening — positions, expressions, surroundings
-- Max 30 words, but be SPECIFIC — no vague descriptions
+- Keep the EXACT action happening (watering, reading, dancing, cooking, talking, etc.)
+- The main character is "Peppa the pink pig in a red dress"
+- Include the background/environment from the story (NOT default green hills)
+- Describe what EACH character is doing and where they are positioned
+- Be SPECIFIC and VISUAL — an illustrator must be able to draw this exactly
+- 30-50 words
 
 Story: "${input.storyParagraph}"
 
-BAD example: "Peppa enjoys a beautiful day" (too vague, no specific objects)
-GOOD example: "Peppa the pink pig waters a glowing blue flower in a small garden with a wooden fence and a smiling snail"
+BAD example: "Peppa enjoys a beautiful day" (too vague, missing characters and objects)
+GOOD example: "Peppa the pink pig in a red dress sits on a log in a dark forest, talking to a wise owl wearing glasses perched on a tree branch, with glowing mushrooms and fireflies around them"
 
 Respond with JSON:
 {
-  "sceneDescription": "Peppa the pink pig ... (specific scene from the story)"
+  "sceneDescription": "Peppa the pink pig ... (specific scene with all characters and setting from the story)"
 }`;
 
   return { prompt, systemPrompt };
 }
 
 /**
- * Step 2: Build the final DALL-E prompt from style base + hard rules + extracted scene.
+ * Step 2: Build the final image prompt.
+ * Scene goes FIRST (most important), style after.
  */
 export interface ImagePromptInput {
   sceneDescription: string;
@@ -75,9 +65,10 @@ export interface ImagePromptOutput {
 }
 
 export function buildImagePrompt(input: ImagePromptInput): ImagePromptOutput {
-  const prompt = `${STORY_IMAGE_STYLE_BASE}
-${STORY_IMAGE_HARD_RULES}
-Scene: ${input.sceneDescription}
+  // Scene first — image models weight earlier tokens more heavily
+  const prompt = `Scene: ${input.sceneDescription}
+
+${STORY_IMAGE_STYLE_BASE}
 Single scene, square format.`;
 
   return { prompt };

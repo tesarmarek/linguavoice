@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-const APP_VERSION = '1.19.0';
+const APP_VERSION = '1.21.0';
 
 export default function VersionLogger() {
   useEffect(() => {

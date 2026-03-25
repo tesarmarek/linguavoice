@@ -27,4 +27,4 @@ export const IMAGE_MODELS: ImageModelOption[] = [
   { id: 'Wan-AI/Wan2.6-image', label: 'Wan 2.6 Image', provider: 'Wan-AI', price: '~$0.03' },
 ];
 
-export const DEFAULT_IMAGE_MODEL = 'black-forest-labs/FLUX.2-pro';
+export const DEFAULT_IMAGE_MODEL = 'google/flash-image-3.1';
