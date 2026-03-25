@@ -152,7 +152,8 @@ export class LLMOrchestrator {
       );
     }
     if (env.ENABLE_IMAGE && imagePrompt) {
-      debug(`  DALL-E prompt: ${imagePrompt.slice(0, 100)}...`);
+      debug(`  Image model requested: ${imageModel || 'default (from env)'}`);
+      debug(`  Image prompt: ${imagePrompt.slice(0, 100)}...`);
       tasks.push(
         this.img.generate(imagePrompt, imagePath, imageModel)
           .then(() => { imageOk = true; debug(`  Story image: OK (${Date.now() - t0}ms, model: ${imageModel || 'default'})`); })
