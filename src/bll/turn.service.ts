@@ -39,6 +39,8 @@ export class TurnService {
       story: result.story,
       postmortem: result.postmortem,
       audio: result.audio,
+      image: result.image,
+      scenarios: result.scenarios,
     };
 
     session.turns.push(turn);

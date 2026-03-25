@@ -41,6 +41,14 @@ export interface CreateTurnResponseDTO {
     voiceId: string;
     generatedAt: string;
   };
+  image: {
+    file: string;
+    prompt: string;
+    generatedAt: string;
+  };
+  scenarios: {
+    scenarios: string[];
+  };
 }
 
 // --- Mappers ---
@@ -57,5 +65,7 @@ export function toCreateTurnResponse(turn: Turn): CreateTurnResponseDTO {
     story: turn.story,
     postmortem: turn.postmortem,
     audio: turn.audio,
+    image: turn.image,
+    scenarios: turn.scenarios,
   };
 }

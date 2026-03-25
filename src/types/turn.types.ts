@@ -46,6 +46,16 @@ export interface AudioResult {
   generatedAt: string;
 }
 
+export interface ImageResult {
+  file: string;
+  prompt: string;
+  generatedAt: string;
+}
+
+export interface ScenarioResult {
+  scenarios: string[];
+}
+
 export interface Turn {
   id: string;
   sessionId: string;
@@ -58,4 +68,6 @@ export interface Turn {
   story: StoryResult;
   postmortem: PostmortemResult;
   audio: AudioResult;
+  image: ImageResult;
+  scenarios: ScenarioResult;
 }

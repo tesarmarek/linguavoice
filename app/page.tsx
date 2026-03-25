@@ -184,8 +184,8 @@ export default function Home() {
               {new Date(session.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
 
-            {/* Turn list */}
-            <div className="w-full max-w-2xl flex-1 space-y-4 pb-32">
+            {/* Turn list — full width for two-column cards */}
+            <div className="w-full max-w-6xl flex-1 space-y-4 pb-32 px-2">
               {turns.map((turn, i) => (
                 <TurnCard
                   key={turn.id}

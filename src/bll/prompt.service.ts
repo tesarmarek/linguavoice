@@ -4,6 +4,8 @@ import { buildCorrectionPrompt, CorrectionPromptOutput } from '../prompts/correc
 import { buildTranslationPrompt, TranslationPromptOutput } from '../prompts/translation.prompt';
 import { buildStoryPrompt, StoryPromptOutput } from '../prompts/story.prompt';
 import { buildPostmortemPrompt, PostmortemPromptOutput } from '../prompts/postmortem.prompt';
+import { buildScenarioPrompt, ScenarioPromptOutput } from '../prompts/scenario.prompt';
+import { buildSceneExtractorPrompt, SceneExtractorOutput, buildImagePrompt, ImagePromptOutput } from '../prompts/image.prompt';
 
 export class PromptService {
   buildCorrection(raw: string, language: Language): CorrectionPromptOutput {
@@ -25,5 +27,17 @@ export class PromptService {
     englishTranslation: string,
   ): PostmortemPromptOutput {
     return buildPostmortemPrompt({ language, original, correction, englishTranslation });
+  }
+
+  buildScenario(storyParagraph: string, theme: string, language: Language): ScenarioPromptOutput {
+    return buildScenarioPrompt({ storyParagraph, theme, language });
+  }
+
+  buildSceneExtractor(storyParagraph: string): SceneExtractorOutput {
+    return buildSceneExtractorPrompt({ storyParagraph });
+  }
+
+  buildImage(sceneDescription: string): ImagePromptOutput {
+    return buildImagePrompt({ sceneDescription });
   }
 }
