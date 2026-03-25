@@ -1,0 +1,13 @@
+{
+  "original": "Já jdu do škole",
+  "corrected": "Já jdu do školy",
+  "wasCorrect": false,
+  "errors": [
+    {
+      "fragment": "škole",
+      "corrected": "školy",
+      "rule": "genitive singular",
+      "explanation": "Po předložce 'do' se používá genitiv. Správný tvar slova 'škola' v genitivu je 'školy'."
+    }
+  ]
+}

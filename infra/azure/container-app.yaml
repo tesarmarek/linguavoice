@@ -1,0 +1,41 @@
+# Azure Container Apps configuration placeholder
+# Deploy with: az containerapp create --yaml infra/azure/container-app.yaml
+
+# TODO: Fill in actual values before deploying
+properties:
+  managedEnvironmentId: /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RG>/providers/Microsoft.App/managedEnvironments/<ENV_NAME>
+  configuration:
+    ingress:
+      external: true
+      targetPort: 3000
+      transport: http
+    secrets:
+      - name: azure-openai-api-key
+        value: "<from-key-vault>"
+      - name: azure-openai-endpoint
+        value: "<from-key-vault>"
+      - name: anthropic-api-key
+        value: "<from-key-vault>"
+      - name: elevenlabs-api-key
+        value: "<from-key-vault>"
+  template:
+    containers:
+      - name: linguavoice
+        image: "<ACR_NAME>.azurecr.io/linguavoice:latest"
+        resources:
+          cpu: 0.5
+          memory: 1Gi
+        env:
+          - name: LLM_PROVIDER
+            value: "azure-openai"
+          - name: AZURE_OPENAI_API_KEY
+            secretRef: azure-openai-api-key
+          - name: AZURE_OPENAI_ENDPOINT
+            secretRef: azure-openai-endpoint
+          - name: ANTHROPIC_API_KEY
+            secretRef: anthropic-api-key
+          - name: ELEVENLABS_API_KEY
+            secretRef: elevenlabs-api-key
+    scale:
+      minReplicas: 0
+      maxReplicas: 3

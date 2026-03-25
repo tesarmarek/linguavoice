@@ -1,0 +1,86 @@
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "startedAt": "2026-03-25T10:00:00.000Z",
+  "endedAt": "2026-03-25T10:15:00.000Z",
+  "language": "sk",
+  "turnCount": 2,
+  "appVersion": "1.0.0",
+  "turns": [
+    {
+      "id": "t1a2b3c4-d5e6-7890-abcd-ef1234567001",
+      "sessionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "index": 0,
+      "createdAt": "2026-03-25T10:01:00.000Z",
+      "durationMs": 4500,
+      "input": {
+        "raw": "Idem do školy",
+        "language": "sk",
+        "confidence": 0.92
+      },
+      "correction": {
+        "original": "Idem do školy",
+        "corrected": "Idem do školy",
+        "wasCorrect": true,
+        "errors": []
+      },
+      "translation": {
+        "source": "Idem do školy",
+        "english": "I am going to school"
+      },
+      "story": {
+        "paragraph": "Once upon a time, a young student walked through the morning mist to school. The path was lined with ancient oak trees that whispered secrets of knowledge. Every step brought new discoveries and the promise of adventure.",
+        "theme": "school"
+      },
+      "postmortem": {
+        "grammarRules": ["present tense", "motion verbs"],
+        "learningNote": "Veta je gramaticky správna. Sloveso 'ísť' sa v prítomnom čase časuje ako 'idem'.",
+        "difficulty": "easy",
+        "suggestedPractice": "Try using different motion verbs: bežím (I run), letím (I fly), idem (I go)."
+      },
+      "audio": {
+        "translationFile": "/data/audio/t1a2b3c4-translation.mp3",
+        "storyFile": "/data/audio/t1a2b3c4-story.mp3",
+        "voiceId": "21m00Tcm4TlvDq8ikWAM",
+        "generatedAt": "2026-03-25T10:01:05.000Z"
+      }
+    },
+    {
+      "id": "t1a2b3c4-d5e6-7890-abcd-ef1234567002",
+      "sessionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "index": 1,
+      "createdAt": "2026-03-25T10:05:00.000Z",
+      "durationMs": 5200,
+      "input": {
+        "raw": "Mám rád knihy",
+        "language": "sk",
+        "confidence": 0.88
+      },
+      "correction": {
+        "original": "Mám rád knihy",
+        "corrected": "Mám rád knihy",
+        "wasCorrect": true,
+        "errors": []
+      },
+      "translation": {
+        "source": "Mám rád knihy",
+        "english": "I like books"
+      },
+      "story": {
+        "paragraph": "In a cozy library nestled between two hills, a curious reader discovered a book that could talk. The book told tales of faraway lands where words came alive. Together, they embarked on a journey through stories untold.",
+        "theme": "books"
+      },
+      "postmortem": {
+        "grammarRules": ["mať rád + accusative", "plural nouns"],
+        "learningNote": "Správne použitie väzby 'mať rád' s akuzatívom množného čísla.",
+        "difficulty": "easy",
+        "suggestedPractice": "Practice expressing preferences: Mám rád/rada + noun in accusative case."
+      },
+      "audio": {
+        "translationFile": "/data/audio/t1a2b3c4-002-translation.mp3",
+        "storyFile": "/data/audio/t1a2b3c4-002-story.mp3",
+        "voiceId": "21m00Tcm4TlvDq8ikWAM",
+        "generatedAt": "2026-03-25T10:05:06.000Z"
+      }
+    }
+  ]
+}

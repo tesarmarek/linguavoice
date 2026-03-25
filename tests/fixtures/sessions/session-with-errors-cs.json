@@ -1,0 +1,55 @@
+{
+  "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "startedAt": "2026-03-25T14:00:00.000Z",
+  "endedAt": "2026-03-25T14:10:00.000Z",
+  "language": "cs",
+  "turnCount": 1,
+  "appVersion": "1.0.0",
+  "turns": [
+    {
+      "id": "t2b3c4d5-e6f7-8901-bcde-f12345678001",
+      "sessionId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "index": 0,
+      "createdAt": "2026-03-25T14:01:00.000Z",
+      "durationMs": 6100,
+      "input": {
+        "raw": "Já jdu do škole",
+        "language": "cs",
+        "confidence": 0.85
+      },
+      "correction": {
+        "original": "Já jdu do škole",
+        "corrected": "Já jdu do školy",
+        "wasCorrect": false,
+        "errors": [
+          {
+            "fragment": "škole",
+            "corrected": "školy",
+            "rule": "genitive singular",
+            "explanation": "Po předložce 'do' se používá genitiv. Správný tvar slova 'škola' v genitivu je 'školy'."
+          }
+        ]
+      },
+      "translation": {
+        "source": "Já jdu do školy",
+        "english": "I am going to school"
+      },
+      "story": {
+        "paragraph": "A brave young traveler set out on the winding road to the great school of wisdom. Along the way, a friendly fox joined as a companion. Together they learned that every journey begins with a single, correct step.",
+        "theme": "school"
+      },
+      "postmortem": {
+        "grammarRules": ["genitive case after 'do'", "noun declension patterns"],
+        "learningNote": "Po předložce 'do' musí následovat genitiv. U podstatného jména 'škola' je genitiv 'školy'.",
+        "difficulty": "medium",
+        "suggestedPractice": "Practice genitive forms after prepositions: do školy, do města, do lesa."
+      },
+      "audio": {
+        "translationFile": "/data/audio/t2b3c4d5-translation.mp3",
+        "storyFile": "/data/audio/t2b3c4d5-story.mp3",
+        "voiceId": "21m00Tcm4TlvDq8ikWAM",
+        "generatedAt": "2026-03-25T14:01:07.000Z"
+      }
+    }
+  ]
+}
