@@ -32,19 +32,30 @@ export default function Home() {
   const [imageModels, setImageModels] = useState<Array<{ id: string; label: string; provider: string; price: string }>>([]);
   const [selectedImageModel, setSelectedImageModel] = useState('');
 
+  // STT model state
+  const [sttModels, setSttModels] = useState<Array<{ id: string; label: string; price: string }>>([]);
+  const [selectedSTTModel, setSelectedSTTModel] = useState('browser');
+
   // Toast notifications
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Auto-scroll ref
   const turnsEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch image models on mount
+  // Fetch models on mount
   useEffect(() => {
     fetch('/api/image-models')
       .then((res) => res.json())
       .then((data) => {
         setImageModels(data.models || []);
         setSelectedImageModel(data.default || '');
+      })
+      .catch(() => {});
+    fetch('/api/stt-models')
+      .then((res) => res.json())
+      .then((data) => {
+        setSttModels(data.models || []);
+        setSelectedSTTModel(data.default || 'browser');
       })
       .catch(() => {});
   }, []);
@@ -222,20 +233,21 @@ export default function Home() {
               <div ref={turnsEndRef} />
             </div>
 
-            {/* Voice button + model selector — fixed at bottom */}
+            {/* Voice button + model selectors — fixed at bottom */}
             <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-white/90 backdrop-blur px-4 py-3">
               <div className="max-w-6xl mx-auto flex items-center gap-3">
-                {/* Model selector */}
-                {imageModels.length > 0 && (
+                {/* STT model selector */}
+                {sttModels.length > 0 && (
                   <select
-                    value={selectedImageModel}
-                    onChange={(e) => setSelectedImageModel(e.target.value)}
+                    value={selectedSTTModel}
+                    onChange={(e) => setSelectedSTTModel(e.target.value)}
                     disabled={processing}
-                    className="rounded-lg border border-gray-200 bg-white px-2 py-2 text-xs text-gray-600 shadow-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 min-w-0 w-48"
+                    className="rounded-lg border border-gray-200 bg-white px-2 py-2 text-xs text-gray-600 shadow-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 min-w-0 w-40"
+                    title="Speech-to-Text model"
                   >
-                    {imageModels.map((m) => (
+                    {sttModels.map((m) => (
                       <option key={m.id} value={m.id}>
-                        {m.label} ({m.price})
+                        STT: {m.label} ({m.price})
                       </option>
                     ))}
                   </select>
@@ -245,10 +257,27 @@ export default function Home() {
                   <VoiceButton
                     language={session.language}
                     disabled={processing}
+                    sttModel={selectedSTTModel}
                     onResult={handleVoiceResult}
                     onError={showToast}
                   />
                 </div>
+                {/* Image model selector */}
+                {imageModels.length > 0 && (
+                  <select
+                    value={selectedImageModel}
+                    onChange={(e) => setSelectedImageModel(e.target.value)}
+                    disabled={processing}
+                    className="rounded-lg border border-gray-200 bg-white px-2 py-2 text-xs text-gray-600 shadow-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 min-w-0 w-48"
+                    title="Image generation model"
+                  >
+                    {imageModels.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        IMG: {m.label} ({m.price})
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
           </>

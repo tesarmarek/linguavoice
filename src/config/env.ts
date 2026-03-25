@@ -16,6 +16,8 @@ export interface EnvConfig {
   ELEVENLABS_IMAGE_MODEL: string;
   TOGETHER_API_KEY: string;
   TOGETHER_IMAGE_MODEL: string;
+  TOGETHER_STT_MODEL: string;
+  TOGETHER_STT_LANGUAGE: string;
   OPENAI_IMAGE_MODEL: string;
   OPENAI_IMAGE_QUALITY: string;
 }
@@ -60,6 +62,8 @@ export function getEnvConfig(): EnvConfig {
     ELEVENLABS_IMAGE_MODEL: optionalEnv('ELEVENLABS_IMAGE_MODEL', 'flux-kontext'),
     TOGETHER_API_KEY: optionalEnv('TOGETHER_API_KEY', ''),
     TOGETHER_IMAGE_MODEL: optionalEnv('TOGETHER_IMAGE_MODEL', 'google/flash-image-3.1'),
+    TOGETHER_STT_MODEL: optionalEnv('TOGETHER_STT_MODEL', 'openai/whisper-large-v3'),
+    TOGETHER_STT_LANGUAGE: optionalEnv('TOGETHER_STT_LANGUAGE', 'auto'),
     OPENAI_IMAGE_MODEL: optionalEnv('OPENAI_IMAGE_MODEL', 'dall-e-3'),
     OPENAI_IMAGE_QUALITY: optionalEnv('OPENAI_IMAGE_QUALITY', 'standard'),
   };

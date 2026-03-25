@@ -31,8 +31,6 @@ export class TogetherImageClient implements IImageClient {
           model: this.model,
           prompt: 'A pink circle',
           n: 1,
-          width: 256,
-          height: 256,
           response_format: 'b64_json',
         }),
       });
@@ -84,8 +82,6 @@ export class TogetherImageClient implements IImageClient {
             model: currentModel,
             prompt: truncatedPrompt,
             n: 1,
-            width: 1024,
-            height: 1024,
             response_format: 'b64_json',
           }),
         });
