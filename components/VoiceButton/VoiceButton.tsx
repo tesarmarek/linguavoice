@@ -6,6 +6,7 @@ import type { Language } from '@/src/types/session.types';
 export interface VoiceButtonProps {
   language: Language;
   disabled?: boolean;
+  sttModel: string;
   onResult: (transcript: string, confidence: number) => void;
   onError: (message: string) => void;
 }
@@ -38,30 +39,28 @@ const LANG_MAP: Record<Language, string> = {
 export default function VoiceButton({
   language,
   disabled = false,
+  sttModel,
   onResult,
   onError,
 }: VoiceButtonProps) {
   const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const gotResultRef = useRef(false);
 
-  const toggleRecording = useCallback(() => {
-    // If already recording, stop
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      return;
-    }
+  const useBrowserSTT = sttModel === 'browser';
 
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
+  // Browser STT via Web Speech API
+  const startBrowserSTT = useCallback(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       onError('Speech recognition is not supported in this browser.');
       return;
     }
 
     gotResultRef.current = false;
-
     const recognition = new SpeechRecognition();
     recognition.lang = LANG_MAP[language];
     recognition.interimResults = false;
@@ -76,7 +75,6 @@ export default function VoiceButton({
     };
 
     recognition.onerror = (event: { error: string }) => {
-      console.error('[VoiceButton] Speech error:', event.error);
       if (event.error === 'not-allowed') {
         onError('Microphone permission denied. Please allow mic access.');
       } else if (event.error === 'no-speech') {
@@ -89,31 +87,110 @@ export default function VoiceButton({
     };
 
     recognition.onend = () => {
-      console.log('[VoiceButton] Recognition ended, gotResult:', gotResultRef.current);
       setRecording(false);
       recognitionRef.current = null;
     };
 
     recognitionRef.current = recognition;
-
     try {
       recognition.start();
       setRecording(true);
-      console.log('[VoiceButton] Recording started, lang:', LANG_MAP[language]);
-    } catch (err) {
-      console.error('[VoiceButton] Failed to start:', err);
+    } catch {
       onError('Failed to start speech recognition.');
       recognitionRef.current = null;
     }
   }, [language, onResult, onError]);
 
+  const stopBrowserSTT = useCallback(() => {
+    recognitionRef.current?.stop();
+  }, []);
+
+  // Together.ai STT via MediaRecorder + server transcription
+  const startTogetherSTT = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        // Stop all tracks
+        stream.getTracks().forEach(t => t.stop());
+
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        if (audioBlob.size < 100) {
+          onError('No audio recorded. Please try again.');
+          setRecording(false);
+          return;
+        }
+
+        setTranscribing(true);
+        try {
+          const formData = new FormData();
+          formData.append('audio', audioBlob, 'recording.webm');
+          formData.append('language', language);
+
+          const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Transcription failed');
+          }
+
+          const result = await res.json();
+          if (result.text) {
+            onResult(result.text, result.confidence ?? 0.9);
+          } else {
+            onError('No speech detected. Please try again.');
+          }
+        } catch (err) {
+          console.error('[VoiceButton] Together STT error:', err);
+          onError(`Transcription error: ${(err as Error).message}`);
+        } finally {
+          setTranscribing(false);
+          setRecording(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setRecording(true);
+    } catch (err) {
+      if ((err as Error).name === 'NotAllowedError') {
+        onError('Microphone permission denied. Please allow mic access.');
+      } else {
+        onError(`Microphone error: ${(err as Error).message}`);
+      }
+    }
+  }, [language, onResult, onError]);
+
+  const stopTogetherSTT = useCallback(() => {
+    if (mediaRecorderRef.current?.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+  }, []);
+
+  // Toggle recording
+  const toggleRecording = useCallback(() => {
+    if (recording) {
+      useBrowserSTT ? stopBrowserSTT() : stopTogetherSTT();
+    } else {
+      useBrowserSTT ? startBrowserSTT() : startTogetherSTT();
+    }
+  }, [recording, useBrowserSTT, startBrowserSTT, stopBrowserSTT, startTogetherSTT, stopTogetherSTT]);
+
+  const isWorking = recording || transcribing;
+
   return (
     <button
       onClick={toggleRecording}
-      disabled={disabled}
-      aria-label={recording ? 'Click to stop recording' : 'Click to start speaking'}
+      disabled={disabled || transcribing}
+      aria-label={isWorking ? 'Click to stop recording' : 'Click to start speaking'}
       className={`w-full max-w-xs mx-auto flex items-center justify-center gap-2 rounded-full px-8 py-4 text-lg font-semibold select-none transition-all
-        ${disabled
+        ${disabled || transcribing
           ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
           : recording
             ? 'bg-red-500 text-white scale-105 shadow-lg shadow-red-200 animate-pulse'
@@ -125,7 +202,7 @@ export default function VoiceButton({
         <path d="M6 11a1 1 0 10-2 0 8 8 0 0016 0 1 1 0 10-2 0 6 6 0 01-12 0z" />
         <path d="M11 19.93A8.001 8.001 0 014 12a1 1 0 112 0 6 6 0 0012 0 1 1 0 112 0 8.001 8.001 0 01-7 7.93V22a1 1 0 11-2 0v-2.07z" />
       </svg>
-      {recording ? 'Listening... (click to stop)' : 'Click to Speak'}
+      {transcribing ? 'Transcribing...' : recording ? 'Listening... (click to stop)' : 'Click to Speak'}
     </button>
   );
 }

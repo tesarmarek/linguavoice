@@ -7,6 +7,7 @@ export interface CreateTurnRequestDTO {
   raw: string;
   language: Language;
   confidence: number;
+  imageModel?: string;
 }
 
 // --- Response DTOs ---

@@ -1,7 +1,7 @@
 import { getEnvConfig } from '../config/env';
 import { getLLMClient } from '../config/llm.config';
 import { getTTSClient } from '../config/tts.config';
-import { OpenAIImageClient } from '../clients/openai-image.client';
+import { getImageClient } from '../config/image.config';
 import { SessionRepository } from '../dal/repositories/session.repository';
 import { IndexRepository } from '../dal/repositories/index.repository';
 import { PromptService } from '../bll/prompt.service';
@@ -30,7 +30,7 @@ export async function getTurnService(): Promise<TurnService> {
     const promptService = new PromptService();
     const { DATA_DIR } = getEnvConfig();
 
-    const imageClient = new OpenAIImageClient();
+    const imageClient = await getImageClient();
     const orchestrator = new LLMOrchestrator({
       llmClient,
       elevenLabsClient: ttsClient,

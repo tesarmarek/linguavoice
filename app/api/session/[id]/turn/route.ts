@@ -17,12 +17,13 @@ export async function POST(
       return NextResponse.json({ errors: validation.errors }, { status: 400 });
     }
 
+    if (body.imageModel) console.log(`[Turn API] imageModel from request: ${body.imageModel}`);
     const turnService = await getTurnService();
     const turn = await turnService.createTurn(sessionId, {
       raw: validation.data.raw,
       language: validation.data.language,
       confidence: validation.data.confidence,
-    });
+    }, body.imageModel);
 
     return NextResponse.json(toCreateTurnResponse(turn), { status: 201 });
   } catch (error) {

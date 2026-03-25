@@ -12,7 +12,7 @@ export class TurnService {
     private orchestrator: LLMOrchestrator,
   ) {}
 
-  async createTurn(sessionId: string, input: TranscriptInput): Promise<Turn> {
+  async createTurn(sessionId: string, input: TranscriptInput, imageModel?: string): Promise<Turn> {
     const session = await this.sessionRepo.getById(sessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionId}`);
@@ -24,7 +24,7 @@ export class TurnService {
     this.validateInput(input);
 
     const startTime = Date.now();
-    const result: OrchestratorResult = await this.orchestrator.processTurn(input, session.language);
+    const result: OrchestratorResult = await this.orchestrator.processTurn(input, session.language, imageModel);
     const durationMs = Date.now() - startTime;
 
     const turn: Turn = {
