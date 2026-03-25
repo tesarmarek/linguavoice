@@ -9,6 +9,9 @@ export interface EnvConfig {
   ELEVENLABS_VOICE_ID: string;
   DATA_DIR: string;
   DEBUG: boolean;
+  ENABLE_TTS: boolean;
+  ENABLE_IMAGE: boolean;
+  ENABLE_SCENARIOS: boolean;
 }
 
 function requireEnv(key: string): string {
@@ -44,6 +47,9 @@ export function getEnvConfig(): EnvConfig {
     ELEVENLABS_VOICE_ID: optionalEnv('ELEVENLABS_VOICE_ID', ''),
     DATA_DIR: optionalEnv('DATA_DIR', './data'),
     DEBUG: optionalEnv('DEBUG', 'false') === 'true',
+    ENABLE_TTS: optionalEnv('ENABLE_TTS', 'true') === 'true',
+    ENABLE_IMAGE: optionalEnv('ENABLE_IMAGE', 'true') === 'true',
+    ENABLE_SCENARIOS: optionalEnv('ENABLE_SCENARIOS', 'true') === 'true',
   };
 
   // Validate that the chosen provider has its required keys

@@ -30,10 +30,14 @@ export class IndexRepository implements IIndexRepository {
   }
 
   private async writeIndex(entries: SessionIndexEntry[]): Promise<void> {
+    const { DATA_DIR } = getEnvConfig();
     const filePath = this.getIndexPath();
     const tmpPath = this.getTmpPath();
 
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    // Ensure data dir + sessions dir exist
+    await fs.mkdir(path.join(DATA_DIR, 'sessions'), { recursive: true });
+    await fs.mkdir(path.join(DATA_DIR, 'audio'), { recursive: true });
+    await fs.mkdir(path.join(DATA_DIR, 'images'), { recursive: true });
     await fs.writeFile(tmpPath, JSON.stringify({ sessions: entries }, null, 2), 'utf-8');
     await fs.rename(tmpPath, filePath);
   }

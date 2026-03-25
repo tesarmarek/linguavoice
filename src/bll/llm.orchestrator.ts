@@ -6,9 +6,12 @@ import {
   StoryResult,
   PostmortemResult,
   AudioResult,
+  ImageResult,
+  ScenarioResult,
 } from '../types/turn.types';
 import { ILLMClient } from '../clients/llm.client.interface';
 import { ITTSClient } from '../clients/tts.interface';
+import { IImageClient } from '../clients/openai-image.client';
 import { PromptService } from './prompt.service';
 import { getEnvConfig } from '../config/env';
 
@@ -24,11 +27,14 @@ export interface OrchestratorResult {
   story: StoryResult;
   postmortem: PostmortemResult;
   audio: AudioResult;
+  image: ImageResult;
+  scenarios: ScenarioResult;
 }
 
 export interface OrchestratorDeps {
   llmClient: ILLMClient;
   elevenLabsClient: ITTSClient;
+  imageClient: IImageClient;
   promptService: PromptService;
   dataDir: string;
 }
@@ -36,12 +42,14 @@ export interface OrchestratorDeps {
 export class LLMOrchestrator {
   private llm: ILLMClient;
   private tts: ITTSClient;
+  private img: IImageClient;
   private prompts: PromptService;
   private dataDir: string;
 
   constructor(deps: OrchestratorDeps) {
     this.llm = deps.llmClient;
     this.tts = deps.elevenLabsClient;
+    this.img = deps.imageClient;
     this.prompts = deps.promptService;
     this.dataDir = deps.dataDir;
   }
@@ -87,37 +95,77 @@ export class LLMOrchestrator {
     const postmortem: PostmortemResult = JSON.parse(postmortemRaw);
     debug('Parsed postmortem:', JSON.stringify(postmortem));
 
-    // Step 5: Audio generation — await both so files exist before response
-    const audioId = Date.now().toString(36);
-    const translationAudioFile = `${audioId}-translation.mp3`;
-    const storyAudioFile = `${audioId}-story.mp3`;
+    // Step 5: Scenarios (LLM — ignite kids imagination)
+    const env = getEnvConfig();
+    let scenarios: ScenarioResult = { scenarios: [] };
+    if (env.ENABLE_SCENARIOS) {
+      debug('Step 5: Scenarios...');
+      const scenarioPrompt = this.prompts.buildScenario(story.paragraph, story.theme, language);
+      const scenarioRaw = await this.llm.complete(scenarioPrompt.prompt, scenarioPrompt.systemPrompt);
+      debug('OpenAI scenario response:', scenarioRaw);
+      scenarios = JSON.parse(scenarioRaw);
+      debug('Parsed scenarios:', JSON.stringify(scenarios));
+    } else {
+      debug('Step 5: Scenarios SKIPPED (ENABLE_SCENARIOS=false)');
+    }
+
+    // Step 6: Scene extraction for image (LLM call, if image enabled)
+    let sceneDescription = '';
+    let imagePrompt = '';
+    if (env.ENABLE_IMAGE) {
+      debug('Step 6a: Extracting visual scene from story...');
+      const sceneExtractor = this.prompts.buildSceneExtractor(story.paragraph);
+      const sceneRaw = await this.llm.complete(sceneExtractor.prompt, sceneExtractor.systemPrompt);
+      debug('Scene extractor response:', sceneRaw);
+      const sceneResult = JSON.parse(sceneRaw);
+      sceneDescription = sceneResult.sceneDescription ?? '';
+      debug('Extracted scene:', sceneDescription);
+
+      const imagePromptResult = this.prompts.buildImage(sceneDescription);
+      imagePrompt = imagePromptResult.prompt;
+      debug('Final DALL-E prompt (first 300 chars):', imagePrompt.slice(0, 300));
+    }
+
+    // Step 7: Audio + Image generation (all in parallel, respecting env flags)
+    const assetId = Date.now().toString(36);
+    const translationAudioFile = `${assetId}-translation.mp3`;
+    const storyAudioFile = `${assetId}-story.mp3`;
+    const imageFile = `${assetId}-story.png`;
     const translationAudioPath = `${this.dataDir}/audio/${translationAudioFile}`;
     const storyAudioPath = `${this.dataDir}/audio/${storyAudioFile}`;
+    const imagePath = `${this.dataDir}/images/${imageFile}`;
 
-    debug('Step 5: Generating audio (translation + story in parallel)...');
+    debug(`Step 7: Generating assets (TTS=${env.ENABLE_TTS}, IMAGE=${env.ENABLE_IMAGE})...`);
     let translationAudioOk = false;
     let storyAudioOk = false;
+    let imageOk = false;
 
-    try {
-      const t0 = Date.now();
-      await Promise.all([
+    const tasks: Promise<void>[] = [];
+    const t0 = Date.now();
+
+    if (env.ENABLE_TTS) {
+      tasks.push(
         this.tts.synthesize(translation.english, translationAudioPath)
-          .then(() => {
-            translationAudioOk = true;
-            debug(`  Translation audio created: ${translationAudioFile} (${Date.now() - t0}ms)`);
-          }),
+          .then(() => { translationAudioOk = true; debug(`  Translation audio: OK (${Date.now() - t0}ms)`); }),
         this.tts.synthesize(story.paragraph, storyAudioPath)
-          .then(() => {
-            storyAudioOk = true;
-            debug(`  Story audio created: ${storyAudioFile} (${Date.now() - t0}ms)`);
-          }),
-      ]);
-      debug('Audio generation complete');
-    } catch (err) {
-      console.warn('[LLMOrchestrator] Audio generation error (partial ok):', (err as Error).message);
-      debug(`  Translation audio: ${translationAudioOk ? 'OK' : 'FAILED'}`);
-      debug(`  Story audio: ${storyAudioOk ? 'OK' : 'FAILED'}`);
+          .then(() => { storyAudioOk = true; debug(`  Story audio: OK (${Date.now() - t0}ms)`); }),
+      );
     }
+    if (env.ENABLE_IMAGE && imagePrompt) {
+      debug(`  DALL-E prompt: ${imagePrompt.slice(0, 100)}...`);
+      tasks.push(
+        this.img.generate(imagePrompt, imagePath)
+          .then(() => { imageOk = true; debug(`  Story image: OK (${Date.now() - t0}ms)`); }),
+      );
+    }
+
+    if (tasks.length > 0) {
+      await Promise.allSettled(tasks);
+    }
+
+    if (env.ENABLE_TTS && !translationAudioOk) debug('  Translation audio: FAILED');
+    if (env.ENABLE_TTS && !storyAudioOk) debug('  Story audio: FAILED');
+    if (env.ENABLE_IMAGE && !imageOk) debug('  Story image: FAILED');
 
     const audio: AudioResult = {
       translationFile: translationAudioOk ? translationAudioFile : '',
@@ -126,7 +174,13 @@ export class LLMOrchestrator {
       generatedAt: new Date().toISOString(),
     };
 
+    const image: ImageResult = {
+      file: imageOk ? imageFile : '',
+      prompt: sceneDescription || imagePrompt,
+      generatedAt: new Date().toISOString(),
+    };
+
     debug('=== TURN COMPLETE ===');
-    return { correction, translation, story, postmortem, audio };
+    return { correction, translation, story, postmortem, audio, image, scenarios };
   }
 }
