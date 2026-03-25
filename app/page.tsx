@@ -28,11 +28,26 @@ export default function Home() {
   const [sessionIndex, setSessionIndex] = useState<SessionIndexEntry[]>([]);
   const [modalSession, setModalSession] = useState<Session | null>(null);
 
+  // Image model state
+  const [imageModels, setImageModels] = useState<Array<{ id: string; label: string; provider: string; price: string }>>([]);
+  const [selectedImageModel, setSelectedImageModel] = useState('');
+
   // Toast notifications
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Auto-scroll ref
   const turnsEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch image models on mount
+  useEffect(() => {
+    fetch('/api/image-models')
+      .then((res) => res.json())
+      .then((data) => {
+        setImageModels(data.models || []);
+        setSelectedImageModel(data.default || '');
+      })
+      .catch(() => {});
+  }, []);
 
   const showToast = useCallback((message: string) => {
     const id = ++toastId;
@@ -84,7 +99,7 @@ export default function Home() {
       const res = await fetch(`/api/session/${session.id}/turn`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ raw: transcript, language: session.language, confidence }),
+        body: JSON.stringify({ raw: transcript, language: session.language, confidence, imageModel: selectedImageModel }),
       });
       if (!res.ok) throw new Error('Failed to process turn');
       const turn: Turn = await res.json();
@@ -207,14 +222,34 @@ export default function Home() {
               <div ref={turnsEndRef} />
             </div>
 
-            {/* Voice button — fixed at bottom */}
-            <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-white/90 backdrop-blur px-4 py-4">
-              <VoiceButton
-                language={session.language}
-                disabled={processing}
-                onResult={handleVoiceResult}
-                onError={showToast}
-              />
+            {/* Voice button + model selector — fixed at bottom */}
+            <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-white/90 backdrop-blur px-4 py-3">
+              <div className="max-w-6xl mx-auto flex items-center gap-3">
+                {/* Model selector */}
+                {imageModels.length > 0 && (
+                  <select
+                    value={selectedImageModel}
+                    onChange={(e) => setSelectedImageModel(e.target.value)}
+                    disabled={processing}
+                    className="rounded-lg border border-gray-200 bg-white px-2 py-2 text-xs text-gray-600 shadow-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 min-w-0 w-48"
+                  >
+                    {imageModels.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.label} ({m.price})
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {/* Voice button */}
+                <div className="flex-1">
+                  <VoiceButton
+                    language={session.language}
+                    disabled={processing}
+                    onResult={handleVoiceResult}
+                    onError={showToast}
+                  />
+                </div>
+              </div>
             </div>
           </>
         )}

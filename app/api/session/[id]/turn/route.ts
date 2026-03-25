@@ -22,7 +22,7 @@ export async function POST(
       raw: validation.data.raw,
       language: validation.data.language,
       confidence: validation.data.confidence,
-    });
+    }, body.imageModel);
 
     return NextResponse.json(toCreateTurnResponse(turn), { status: 201 });
   } catch (error) {

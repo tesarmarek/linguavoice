@@ -54,7 +54,7 @@ export class LLMOrchestrator {
     this.dataDir = deps.dataDir;
   }
 
-  async processTurn(input: TranscriptInput, language: Language): Promise<OrchestratorResult> {
+  async processTurn(input: TranscriptInput, language: Language, imageModel?: string): Promise<OrchestratorResult> {
     debug('=== NEW TURN ===');
     debug('User said:', JSON.stringify(input));
 
@@ -154,8 +154,9 @@ export class LLMOrchestrator {
     if (env.ENABLE_IMAGE && imagePrompt) {
       debug(`  DALL-E prompt: ${imagePrompt.slice(0, 100)}...`);
       tasks.push(
-        this.img.generate(imagePrompt, imagePath)
-          .then(() => { imageOk = true; debug(`  Story image: OK (${Date.now() - t0}ms)`); }),
+        this.img.generate(imagePrompt, imagePath, imageModel)
+          .then(() => { imageOk = true; debug(`  Story image: OK (${Date.now() - t0}ms, model: ${imageModel || 'default'})`); })
+          .catch((err) => { debug(`  Story image error: ${(err as Error).message}`); }),
       );
     }
 

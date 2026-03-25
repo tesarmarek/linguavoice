@@ -45,12 +45,13 @@ export class TogetherImageClient implements IImageClient {
     }
   }
 
-  async generate(prompt: string, outputPath: string): Promise<string> {
+  async generate(prompt: string, outputPath: string, modelOverride?: string): Promise<string> {
     const fs = await import('fs/promises');
     const path = await import('path');
     const debug = getEnvConfig().DEBUG;
+    const model = modelOverride || this.model;
 
-    if (debug) console.log(`[Together Image] Generating with ${this.model}...`);
+    if (debug) console.log(`[Together Image] Generating with ${model}...`);
 
     const response = await fetch('https://api.together.xyz/v1/images/generations', {
       method: 'POST',
@@ -59,7 +60,7 @@ export class TogetherImageClient implements IImageClient {
         'Authorization': `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
-        model: this.model,
+        model,
         prompt,
         n: 1,
         width: 1024,

@@ -59,7 +59,7 @@ export function getEnvConfig(): EnvConfig {
     ELEVENLABS_IMAGE_ENABLED: optionalEnv('ELEVENLABS_IMAGE_ENABLED', 'false') === 'true',
     ELEVENLABS_IMAGE_MODEL: optionalEnv('ELEVENLABS_IMAGE_MODEL', 'flux-kontext'),
     TOGETHER_API_KEY: optionalEnv('TOGETHER_API_KEY', ''),
-    TOGETHER_IMAGE_MODEL: optionalEnv('TOGETHER_IMAGE_MODEL', 'black-forest-labs/FLUX.1-schnell'),
+    TOGETHER_IMAGE_MODEL: optionalEnv('TOGETHER_IMAGE_MODEL', 'black-forest-labs/FLUX.2-pro'),
     OPENAI_IMAGE_MODEL: optionalEnv('OPENAI_IMAGE_MODEL', 'dall-e-3'),
     OPENAI_IMAGE_QUALITY: optionalEnv('OPENAI_IMAGE_QUALITY', 'standard'),
   };
